@@ -35,6 +35,8 @@ This package is meant to be the small application-side eval layer between your p
 - score deterministic expectations like fact coverage and forbidden claims
 - aggregate compact quality signals for CI or reporting
 - run structured “review this draft” passes with the AI SDK when deterministic checks are not enough
+- serialize reproducible run artifacts and export local JSON or CSV summaries
+- run small eval suites programmatically without adopting a heavy benchmark platform
 
 The goal is practical, inspectable eval building blocks for TypeScript apps, not a promise of truth or a substitute for human judgment.
 
@@ -46,6 +48,9 @@ The goal is practical, inspectable eval building blocks for TypeScript apps, not
 - **Paraphrase-tolerant fact matching** using exact-match and token-coverage rules
 - **Review score aggregation** with default or custom dimensions
 - **Structured AI draft review** behind the optional `./ai-sdk` export
+- **Standard run artifacts** for reproducible `results.json`, `report.json`, `run_config.json`, and `items.jsonl`
+- **Local exporters** for JSON bundles and flat CSV item views
+- **Programmatic suite runner** with repetitions, concurrency, and aggregate metric stats
 - **Small OSS surface** with dist-only publishing, ESM output, and no framework dependency in the root package
 
 ## Install
@@ -192,6 +197,51 @@ if (result.status === 'completed') {
   console.log(result.verdict);
   console.log(result.scores.accuracy);
 }
+```
+
+### Suite Runner And Artifact Export
+
+```ts
+import { runSuite, writeRunArtifacts } from '@mundabra/ai-evals';
+
+const run = await runSuite({
+  suiteName: 'customer-draft-smoke',
+  cases: [
+    {
+      id: 'case-1',
+      expected: {
+        requiredFacts: [{ label: 'security review is complete' }],
+      },
+    },
+  ],
+  evaluateCase: async ({ evalCase }) => {
+    const outputText = 'Security review is complete and the draft is ready for review.';
+
+    return {
+      deterministic: {
+        deterministicPass: true,
+        outputTypeCorrect: null,
+        approvalCorrect: null,
+        groundingPresent: null,
+        requiredFactsMatched: ['security review is complete'],
+        requiredFactsMissing: [],
+        requiredFactCoverage: 1,
+        forbiddenClaimsPresent: [],
+      },
+      metrics: {
+        tokens_used: 182,
+      },
+      metadata: {
+        promptCaseId: evalCase.id,
+      },
+    };
+  },
+});
+
+await writeRunArtifacts(run, {
+  outputDir: './eval-results/customer-draft-smoke',
+  csv: { metrics: ['metric.tokens_used'] },
+});
 ```
 
 ## What It Measures In Practice
@@ -399,6 +449,23 @@ For short candidates of three tokens or fewer, coverage must be exact. For longe
 - `NoOutputGeneratedError` retries by default
 - programming errors still throw
 
+### Run Artifacts And Export
+
+The root package now includes a small reproducibility layer:
+
+- `buildRunArtifact` turns item-level results into a standard run object
+- `runSuite` executes cases programmatically and returns a run artifact
+- `exportLocalJson` returns structured run payloads for tools or CI
+- `exportLocalCsv` flattens item-level rows into a spreadsheet-friendly format
+- `writeRunArtifacts` writes:
+  - `results.json`
+  - `report.json`
+  - `run_config.json`
+  - `items.jsonl`
+  - optional `items.csv`
+
+Numeric metrics from deterministic checks, review scores, durations, and custom item metrics are summarized into mean, min, max, standard deviation, and standard error.
+
 ## Public API
 
 Root export:
@@ -412,9 +479,14 @@ Root export:
 - `scoreFixture`
 - `aggregateFixtureResults`
 - `scoreDeterministicCase`
+- `buildRunArtifact`
+- `exportLocalJson`
+- `exportLocalCsv`
+- `writeRunArtifacts`
+- `runSuite`
 - `buildGroundingDistribution`
 - `buildReviewDistribution`
-- shared types such as `Citation`, `SourceEntry`, `EvalCase`, `DeterministicScoreResult`, `GroundingMetricRecord`, and `ReviewMetricRecord`
+- shared types such as `Citation`, `SourceEntry`, `EvalCase`, `DeterministicScoreResult`, `EvalRun`, `EvalRunItem`, `GroundingMetricRecord`, and `ReviewMetricRecord`
 
 Optional `./ai-sdk` export:
 
@@ -430,6 +502,10 @@ For the concise reference, see [docs/eval-reference.md](./docs/eval-reference.md
 ### CI or Unit Tests
 
 Use `scoreDeterministicCase` for product-specific fixture tests where the expected facts and forbidden claims are known ahead of time.
+
+### Repeatable Local Eval Runs
+
+Use `runSuite` and `writeRunArtifacts` when you want a standard local run directory that CI, dashboards, or product scripts can read later without depending on a hosted eval system.
 
 ### Runtime Quality Signals
 

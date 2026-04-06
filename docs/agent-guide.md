@@ -8,7 +8,7 @@ The package is split into two layers:
    - source registry and citation verification
    - grounding metadata and summaries
    - deterministic benchmark scoring
-   - aggregation helpers
+   - run artifacts, local exporters, and aggregation helpers
 2. **Optional `./ai-sdk` review layer**
    - structured draft review using AI SDK `generateText`
    - caller-supplied model
@@ -31,6 +31,12 @@ The root export must stay free of product runtimes and app frameworks.
 2. Pass the produced output text and any optional runtime signals into `scoreDeterministicCase`.
 3. Use the returned `DeterministicScoreResult` in reports or CI.
 
+### Run artifacts
+
+1. Build item-level results directly or produce them through `runSuite`.
+2. Convert them into a standard `EvalRun` with `buildRunArtifact`.
+3. Export or persist the run with `exportLocalJson`, `exportLocalCsv`, or `writeRunArtifacts`.
+
 ### AI review
 
 1. Import from `@mundabra/ai-evals/ai-sdk`.
@@ -43,13 +49,13 @@ The root export must stay free of product runtimes and app frameworks.
 - Unknown grounding statuses are ignored during aggregation.
 - `pending` grounding is rolled into `unverified` in distribution helpers.
 - Deterministic scoring skips output-type, approval, or grounding checks when the eval case does not require them.
+- Derived numeric metric summaries use mean, min, max, standard deviation, and standard error across all items that emit a given metric.
 - AI review retries only `NoOutputGeneratedError` by default.
 - Programming errors in the AI review path must still throw.
 
 ## Non-Goals
 
-- running eval suites for you
-- scheduling or orchestrating benchmarks
+- scheduling or orchestrating benchmarks beyond an in-process suite runner
 - storing results
 - defining business-specific rubric semantics
 - replacing human review in sensitive workflows

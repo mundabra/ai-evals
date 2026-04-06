@@ -35,6 +35,37 @@ Input highlights:
 - `buildReviewDistribution(records, options?)`
 - `defaultReviewDimensions`
 
+### Run artifacts and export
+
+- `buildRunArtifact(input)`
+- `exportLocalJson(run)`
+- `exportLocalCsv(run, options?)`
+- `writeRunArtifacts(run, options)`
+- `runSuite(input)`
+
+Run artifact fields:
+
+- `runId`
+- `generatedAt`
+- `suiteName`
+- `evaluatorName` optional
+- `items`
+- `config`
+- `summary`
+- `report`
+
+Artifact files written by `writeRunArtifacts`:
+
+- `results.json`
+- `report.json`
+- `run_config.json`
+- `items.jsonl`
+- optional `items.csv`
+
+CSV option fields:
+
+- `metrics`: derived metric names such as `review.score.accuracy`, `metric.tokens_used`, or `runtime.durationMs`
+
 ## `./ai-sdk` Export
 
 - `reviewDraft(request, options)`

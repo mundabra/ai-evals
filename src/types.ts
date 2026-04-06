@@ -139,3 +139,102 @@ export interface ReviewMetricRecord<Dimension extends string = DefaultReviewDime
   verdict?: ReviewVerdict | string | null;
   scores?: Partial<Record<Dimension, number>> | null;
 }
+
+export interface EvalRunReview<Dimension extends string = string> {
+  status: 'completed' | 'failed';
+  verdict?: ReviewVerdict | string | null;
+  scores?: Partial<Record<Dimension, number>> | null;
+  issueCount?: number | null;
+  summary?: string;
+  failureReason?: string | null;
+}
+
+export interface EvalRunItem<Dimension extends string = string, OutputType extends string = string> {
+  caseId: string;
+  title?: string;
+  tags?: string[];
+  repetition?: number;
+  status?: 'completed' | 'failed';
+  outputType?: OutputType | string | null;
+  durationMs?: number | null;
+  deterministic?: DeterministicChecks | null;
+  grounding?: GroundingSummary | null;
+  review?: EvalRunReview<Dimension> | null;
+  metrics?: Record<string, number> | null;
+  metadata?: Record<string, unknown> | null;
+  error?: string | null;
+}
+
+export interface NumericMetricSummary {
+  count: number;
+  mean: number;
+  min: number;
+  max: number;
+  stddev: number;
+  stderr: number;
+}
+
+export interface DeterministicRunSummary {
+  totalScored: number;
+  passes: number;
+  passRate: number;
+  avgRequiredFactCoverage: number;
+  totalForbiddenClaims: number;
+}
+
+export interface GroundingRunSummary {
+  total: number;
+  verified: number;
+  partial: number;
+  unverified: number;
+}
+
+export interface ReviewRunSummary {
+  totalReviews: number;
+  approve: number;
+  reviseMinor: number;
+  reviseMajor: number;
+  averageScores: Record<string, number>;
+}
+
+export interface EvalRunSummary {
+  totalItems: number;
+  completedItems: number;
+  failedItems: number;
+  durationMs: number | null;
+  deterministic: DeterministicRunSummary;
+  grounding: GroundingRunSummary;
+  review: ReviewRunSummary;
+  numericMetrics: Record<string, NumericMetricSummary>;
+}
+
+export interface EvalRunConfig {
+  suiteName: string;
+  evaluatorName?: string;
+  reps: number;
+  concurrency: number;
+  dimensions: string[];
+  metrics: string[];
+  metadata: Record<string, unknown> | null;
+  packageName: string;
+  packageVersion: string;
+}
+
+export interface EvalRunReport {
+  headline: string;
+  keyMetrics: Record<string, number | string>;
+  summaryLines: string[];
+}
+
+export interface EvalRun<Dimension extends string = string, OutputType extends string = string> {
+  runId: string;
+  generatedAt: string;
+  packageName: string;
+  packageVersion: string;
+  suiteName: string;
+  evaluatorName?: string;
+  items: Array<EvalRunItem<Dimension, OutputType>>;
+  config: EvalRunConfig;
+  summary: EvalRunSummary;
+  report: EvalRunReport;
+}
