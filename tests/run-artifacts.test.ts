@@ -274,12 +274,16 @@ describe('run artifacts', () => {
   it('exports local JSON and CSV views', () => {
     const run = buildRunArtifact({
       suiteName: 'customer-drafts',
+      runId: 'run-export',
+      generatedAt: '2026-04-06T00:00:00.000Z',
       items: makeItems(),
       dimensions: ['accuracy', 'clarity'],
     });
 
     expect(exportLocalJson(run)).toMatchObject({
       runConfig: {
+        runId: 'run-export',
+        generatedAt: '2026-04-06T00:00:00.000Z',
         suiteName: 'customer-drafts',
       },
       results: {
@@ -299,6 +303,32 @@ describe('run artifacts', () => {
         '',
       ].join('\n'),
     );
+  });
+
+  it('escapes CSV cells that contain quotes, commas, and newlines', () => {
+    const run = buildRunArtifact({
+      suiteName: 'csv-edge-cases',
+      items: [
+        {
+          caseId: 'csv-case',
+          title: 'He said, "ship it"\nnow',
+          status: 'failed',
+          error: 'line 1\r\nline 2',
+          metrics: {
+            score: 1,
+          },
+        },
+      ],
+    });
+
+    const csv = exportLocalCsv(run, { metrics: ['metric.score'] });
+
+    expect(csv).toContain(
+      'caseId,title,status,repetition,outputType,deterministicPass,requiredFactCoverage,requiredFactsMissingCount,forbiddenClaimCount,approvalCorrect,groundingPresent,groundingStatus,reviewStatus,reviewVerdict,reviewIssueCount,durationMs,error,metric.score',
+    );
+    expect(csv).toContain('"He said, ""ship it""\nnow"');
+    expect(csv).toContain('"line 1\r\nline 2"');
+    expect(csv).toContain(',1\n');
   });
 
   it('writes standard artifact files', async () => {
@@ -335,9 +365,35 @@ describe('run artifacts', () => {
       },
     });
     expect(JSON.parse(await readFile(paths.runConfigPath, 'utf8'))).toMatchObject({
+      runId: 'run-files',
+      generatedAt: '2026-04-06T00:00:00.000Z',
       suiteName: 'customer-drafts',
     });
     expect((await readFile(paths.itemsPath, 'utf8')).trim().split('\n')).toHaveLength(2);
     expect(await readFile(paths.csvPath!, 'utf8')).toContain('review.score.accuracy');
+  });
+
+  it('writes an empty JSONL artifact without a blank placeholder line', async () => {
+    const run = buildRunArtifact({
+      suiteName: 'empty-suite',
+      runId: 'run-empty',
+      generatedAt: '2026-04-06T00:00:00.000Z',
+      items: [],
+    });
+
+    const outputDir = await mkdtemp(join(tmpdir(), 'ai-evals-empty-'));
+    tempDirs.push(outputDir);
+
+    const { itemsPath, runConfigPath } = await writeRunArtifacts(run, {
+      outputDir,
+      csv: true,
+    });
+
+    expect(await readFile(itemsPath, 'utf8')).toBe('');
+    expect(JSON.parse(await readFile(runConfigPath, 'utf8'))).toMatchObject({
+      runId: 'run-empty',
+      generatedAt: '2026-04-06T00:00:00.000Z',
+      suiteName: 'empty-suite',
+    });
   });
 });

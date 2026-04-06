@@ -10,6 +10,7 @@ import type {
   EvalRunReport,
   EvalRunSummary,
   GroundingSummary,
+  LocalRunConfigExport,
   NumericMetricSummary,
   ReviewMetricRecord,
 } from './types.js';
@@ -48,7 +49,7 @@ function summarizeDeterministic(items: EvalRunItem[]): EvalRunSummary['determini
 
 function collectReviewDimensions(items: EvalRunItem[], dimensions?: readonly string[]): string[] {
   if (dimensions && dimensions.length > 0) {
-    return [...dimensions];
+    return [...new Set(dimensions)];
   }
 
   const collected = new Set<string>();
@@ -59,6 +60,16 @@ function collectReviewDimensions(items: EvalRunItem[], dimensions?: readonly str
   }
 
   return [...collected];
+}
+
+function buildLocalRunConfigExport(
+  run: Pick<EvalRun, 'runId' | 'generatedAt' | 'config'>,
+): LocalRunConfigExport {
+  return {
+    runId: run.runId,
+    generatedAt: run.generatedAt,
+    ...run.config,
+  };
 }
 
 function deriveNumericMetrics(item: EvalRunItem): Record<string, number> {
@@ -286,7 +297,7 @@ export function buildRunArtifact<Dimension extends string = string, OutputType e
 }
 
 export interface LocalJsonExport<Dimension extends string = string, OutputType extends string = string> {
-  runConfig: EvalRunConfig;
+  runConfig: LocalRunConfigExport;
   results: EvalRunSummary;
   report: EvalRunReport;
   items: Array<EvalRunItem<Dimension, OutputType>>;
@@ -296,7 +307,7 @@ export function exportLocalJson<Dimension extends string = string, OutputType ex
   run: EvalRun<Dimension, OutputType>,
 ): LocalJsonExport<Dimension, OutputType> {
   return {
-    runConfig: run.config,
+    runConfig: buildLocalRunConfigExport(run),
     results: run.summary,
     report: run.report,
     items: run.items,
@@ -309,7 +320,7 @@ function escapeCsvCell(value: string | number | boolean | null | undefined): str
   }
 
   const stringValue = String(value);
-  if (!/[,"\n]/.test(stringValue)) {
+  if (!/[,"\n\r]/.test(stringValue)) {
     return stringValue;
   }
 
@@ -403,9 +414,11 @@ export async function writeRunArtifacts<Dimension extends string = string, Outpu
   await writeFile(resultsPath, `${JSON.stringify(jsonExport.results, null, 2)}\n`, 'utf8');
   await writeFile(reportPath, `${JSON.stringify(jsonExport.report, null, 2)}\n`, 'utf8');
   await writeFile(runConfigPath, `${JSON.stringify(jsonExport.runConfig, null, 2)}\n`, 'utf8');
+  const itemsJsonl =
+    run.items.length === 0 ? '' : `${run.items.map((item) => JSON.stringify(item)).join('\n')}\n`;
   await writeFile(
     itemsPath,
-    `${run.items.map((item) => JSON.stringify(item)).join('\n')}\n`,
+    itemsJsonl,
     'utf8',
   );
 

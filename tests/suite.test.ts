@@ -140,4 +140,38 @@ describe('suite runner', () => {
       error: 'judge timed out',
     });
   });
+
+  it('preserves case and repetition order under concurrency', async () => {
+    const cases = Array.from({ length: 40 }, (_, index) => ({
+      id: `case-${index + 1}`,
+      title: `Case ${index + 1}`,
+      expected: {},
+    }));
+
+    const run = await runSuite({
+      suiteName: 'ordering-suite',
+      cases,
+      reps: 3,
+      concurrency: 8,
+      evaluateCase: async ({ evalCase, repetition, runIndex }) => {
+        await new Promise((resolve) => setTimeout(resolve, runIndex % 3));
+
+        return {
+          repetition,
+          metrics: {
+            ordinal: runIndex + 1,
+          },
+        };
+      },
+    });
+
+    expect(run.items).toHaveLength(120);
+    expect(run.items.map((item) => `${item.caseId}:${item.repetition}`)).toEqual(
+      Array.from({ length: 3 }, (_, repetitionIndex) =>
+        cases.map((evalCase) => `${evalCase.id}:${repetitionIndex + 1}`)
+      ).flat(),
+    );
+    expect(run.items[0]?.metrics?.ordinal).toBe(1);
+    expect(run.items.at(-1)?.metrics?.ordinal).toBe(120);
+  });
 });

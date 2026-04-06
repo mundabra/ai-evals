@@ -460,7 +460,7 @@ The root package now includes a small reproducibility layer:
 - `writeRunArtifacts` writes:
   - `results.json`
   - `report.json`
-  - `run_config.json`
+  - `run_config.json` with `runId`, `generatedAt`, package metadata, and suite config
   - `items.jsonl`
   - optional `items.csv`
 

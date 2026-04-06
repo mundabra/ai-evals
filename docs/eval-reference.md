@@ -58,7 +58,7 @@ Artifact files written by `writeRunArtifacts`:
 
 - `results.json`
 - `report.json`
-- `run_config.json`
+- `run_config.json` with `runId`, `generatedAt`, package metadata, and suite config
 - `items.jsonl`
 - optional `items.csv`
 

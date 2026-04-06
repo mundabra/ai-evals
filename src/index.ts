@@ -19,6 +19,7 @@ export type {
   GroundingStatus,
   GroundingSummary,
   GroundingVerificationScope,
+  LocalRunConfigExport,
   RemovedCitation,
   ReviewDimension,
   ReviewMetricRecord,

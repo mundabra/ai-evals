@@ -220,6 +220,11 @@ export interface EvalRunConfig {
   packageVersion: string;
 }
 
+export interface LocalRunConfigExport extends EvalRunConfig {
+  runId: string;
+  generatedAt: string;
+}
+
 export interface EvalRunReport {
   headline: string;
   keyMetrics: Record<string, number | string>;
