@@ -1,0 +1,81 @@
+{
+  "name": "@mundabra/ai-evals",
+  "version": "0.1.0-beta.0",
+  "description": "Lightweight TypeScript evals for grounding checks, deterministic scoring, and structured AI draft review",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./ai-sdk": {
+      "types": "./dist/ai-sdk.d.ts",
+      "import": "./dist/ai-sdk.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "check": "pnpm test && pnpm typecheck && pnpm build && pnpm pack:smoke",
+    "pack:smoke": "node ./scripts/verify-pack.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm run build"
+  },
+  "peerDependencies": {
+    "@ai-sdk/provider": "^3.0.0",
+    "ai": "^6.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@ai-sdk/provider": {
+      "optional": true
+    },
+    "ai": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@ai-sdk/provider": "^3.0.8",
+    "@types/node": "^25.5.2",
+    "ai": "^6.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  },
+  "author": "Munish Dabra",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mundabra/ai-evals.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mundabra/ai-evals/issues"
+  },
+  "homepage": "https://github.com/mundabra/ai-evals#readme",
+  "keywords": [
+    "evals",
+    "ai",
+    "llm",
+    "grounding",
+    "citations",
+    "deterministic-evals",
+    "benchmarking",
+    "draft-review",
+    "vercel-ai-sdk",
+    "ai-sdk",
+    "typescript",
+    "llms-txt"
+  ],
+  "license": "MIT",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.28.1"
+}

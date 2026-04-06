@@ -1,0 +1,15 @@
+# @mundabra/ai-evals
+
+Small TypeScript package for grounded AI evals.
+
+Important files:
+
+- README.md
+- AGENTS.md
+- CONTRIBUTING.md
+- SECURITY.md
+- DISCLAIMER.md
+- docs/agent-guide.md
+- docs/eval-reference.md
+- src/index.ts
+- src/ai-sdk.ts

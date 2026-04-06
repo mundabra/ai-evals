@@ -1,0 +1,35 @@
+# @mundabra/ai-evals
+
+`@mundabra/ai-evals` is a small TypeScript package for grounded AI evals.
+
+Repository priorities:
+
+- keep the public API small
+- avoid product-specific abstractions
+- preserve deterministic scoring behavior with tests
+- keep AI SDK integration optional behind `./ai-sdk`
+- document limitations clearly
+
+Key entrypoints:
+
+- `src/index.ts`: root exports for deterministic/core helpers
+- `src/ai-sdk.ts`: optional AI SDK-backed draft review
+- `src/source-registry.ts`: source capture and citation fallback logic
+- `src/grounding.ts`: grounding metadata, summaries, and fixture scoring
+- `src/deterministic.ts`: required-fact and forbidden-claim scoring
+- `src/metrics.ts`: aggregation helpers
+
+Contributor workflow:
+
+- install with `pnpm install`
+- verify with `pnpm check`
+- update docs when contracts change
+- add or update tests for every behavior change
+
+Limitations:
+
+- no hosted runner
+- no CLI
+- no truth guarantee
+- no compliance guarantee
+- no framework dependency in the root package
